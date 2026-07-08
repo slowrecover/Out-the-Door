@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="出门">
 <meta name="theme-color" content="#FDF8EC">
-<title>想想 · 出门小推车 | Thinky · Out the Door</title>
+<title>夏天 · 出门小推车 | Summer · Out the Door</title>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -58,6 +58,12 @@
   .moodRow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0 14px}
   .moodRow button{width:auto;flex:none;padding:10px 15px;margin:0;font-size:18px;border-radius:14px 7px 12px 8px}
   .moodRow button.sel{background:var(--moon)}
+  .savor{width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:#fff;
+    border:2.5px dashed var(--ele2);border-radius:16px 7px 14px 8px;padding:12px 14px;margin:2px 0 14px;text-align:center}
+  .savor::placeholder{color:#b3ab99}
+  .groundCard{background:#fff;border:2.5px solid var(--ele2);border-radius:18px 7px 16px 8px;padding:12px 15px;width:100%;
+    margin:4px 0 12px;font-size:13.5px;line-height:1.8;color:#5f6b7a;text-align:left;display:none}
+  .planRow button.sel{background:var(--moon)}
   @media (prefers-reduced-motion:reduce){.screen{animation:none}#breathRing{transition:none}}
 </style>
 </head>
@@ -65,11 +71,12 @@
 <div class="app">
   <button class="lang" id="langBtn" onclick="flip()">EN</button>
 
-  <svg id="ele" width="150" height="132" viewBox="0 0 300 260" role="img" aria-label="小象想想 Thinky">
+  <svg id="ele" width="150" height="132" viewBox="0 -14 300 274" role="img" aria-label="小象夏天 Summer the Elephant">
     <defs><filter id="cr" x="-15%" y="-15%" width="130%" height="130%">
       <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="11" result="n"/>
       <feDisplacementMap in="SourceGraphic" in2="n" scale="6"/></filter></defs>
     <g filter="url(#cr)" stroke-linecap="round" stroke-linejoin="round">
+      <text id="eleName" x="150" y="26" text-anchor="middle" font-size="30" fill="#e0894a" transform="rotate(-3 150 26)" style="font-family:'ZCOOL KuaiLe','PingFang SC',sans-serif">夏天</text>
       <path d="M150 52 q 0 -20 12 -26" fill="none" stroke="#5b544f" stroke-width="5"/>
       <path d="M162 26 l 16 -9 -2 17 z M162 26 l -15 10 16 6 z" fill="#F4A7BC" stroke="#5b544f" stroke-width="4"/>
       <ellipse cx="76" cy="112" rx="34" ry="42" fill="#95B3D2" fill-opacity=".85" stroke="#5b544f" stroke-width="6"/>
@@ -96,6 +103,7 @@
     <button class="big" onclick="go('s-why')" data-i="b_big"></button>
     <div class="trophy" id="trophy"></div>
     <p class="counter" id="count"></p>
+    <p class="counter" id="planLine" style="color:#6f93bb"></p>
     <p class="foot" data-i="foot"></p>
   </div>
 
@@ -166,6 +174,7 @@
     <h1 data-i="t_out"></h1>
     <p class="say" id="missionOut"></p>
     <div class="clock" id="clock">0:00</div>
+    <div class="groundCard" id="groundTip"></div>
     <p class="sub" data-i="s_out"></p>
     <button class="moss" onclick="askMood()" data-i="b_back"></button>
   </div>
@@ -175,6 +184,7 @@
     <h1 data-i="t_mood"></h1>
     <p class="say" data-i="say_mood"></p>
     <div class="moodRow" id="moodRow"></div>
+    <input class="savor" id="savor" maxlength="40" data-ph="savorPh">
     <button class="moss" id="moodBtn" onclick="win()" disabled style="opacity:.4" data-i="b_mood"></button>
   </div>
 
@@ -183,6 +193,8 @@
     <h1 data-i="t_win"></h1>
     <div class="card" id="stamp"></div>
     <p class="say" data-i="say_win"></p>
+    <p class="say" data-i="t_next" style="margin-top:2px"></p>
+    <div class="planRow" id="nextBox" style="width:100%"></div>
     <button class="soft" onclick="go('s-home')" data-i="b_home"></button>
   </div>
 </div>
@@ -190,7 +202,7 @@
   var T={
     zh:{
       t_home:'出门小推车',
-      s_home:'想出门，但身体像灌了铅？不用逼自己"振作"。想想负责把门，变近一点点。',
+      s_home:'想出门，但身体像灌了铅？不用逼自己"振作"。夏天负责把门，变近一点点。',
       b_big:'我想出门，但动不了',
       foot:'走到门口又折返，也算一次胜利。这里只记赢，不记输。',
       t_why:'先别怪自己，问一句',
@@ -216,14 +228,20 @@
       b_mood:'盖章',
       t_win:'你赢过沙发了',
       say_win:'你没等"想动"才动，<br>你是先动了，然后身体才跟上来。<br>这个顺序，你今天亲手证明了一次。',
-      b_home:'回到想想身边',
+      b_home:'回到夏天身边',
       bIn:'吸 气',bHold:'停',bOut:'呼 —— 气',
-      stamp:function(m,t,b,a){var arrow='心情 '+b+' → '+a+(a>b?'  ↑ 轻了一点':(a<b?' ':' '));return '任务：'+m+'<br>在外面待了 '+t+'<br>'+arrow+'<br>想想给你盖了一个大象脚印章。'},
+      ground5:'<b>落地小练习(焦虑的解药):</b>边走边轻轻说出——你看到的<b>5</b>样东西、听到的<b>4</b>种声音、能摸到的<b>3</b>种质感、闻到的<b>2</b>种气味、和<b>1</b>个此刻的念头。说完,警报会安静很多。',
+      savorPh:'路上有哪个小瞬间让你多看了一眼?(可不填)',
+      savorLine:'路上的小收获:',
+      t_next:'趁热,跟明天定个最小的约——',
+      planPrefix:'明天的约定:',
+      nextSaved:' ✓ 夏天帮你记着',
+      stamp:function(m,t,b,a){var arrow='心情 '+b+' → '+a+(a>b?'  ↑ 轻了一点':(a<b?' ':' '));return '任务：'+m+'<br>在外面待了 '+t+'<br>'+arrow+'<br>夏天给你盖了一个大象脚印章。'},
       cnt:function(n){return '你已经成功出门 '+n+' 次'}
     },
     en:{
       t_home:'Out the door',
-      s_home:'Want to go out but your body feels like lead? No need to pull yourself together. Thinky just makes the door a little closer.',
+      s_home:'Want to go out but your body feels like lead? No need to pull yourself together. Summer just makes the door a little closer.',
       b_big:'I want to go out but cannot move',
       foot:'Reaching the door and turning back still counts as a win. We only record wins here.',
       t_why:'Do not blame yourself — just ask',
@@ -249,9 +267,15 @@
       b_mood:'Stamp it',
       t_win:'You beat the sofa',
       say_win:'You did not wait to "feel like it" —<br>you moved first, and your body caught up after.<br>Today you proved that order, with your own hands.',
-      b_home:'Back to Thinky',
+      b_home:'Back to Summer',
       bIn:'breathe in',bHold:'hold',bOut:'breathe out',
-      stamp:function(m,t,b,a){var arrow='mood '+b+' → '+a+(a>b?'  ↑ a little lighter':' ');return 'Task: '+m+'<br>Time outside: '+t+'<br>'+arrow+'<br>Thinky stamps it with an elephant footprint.'},
+      ground5:'<b>Grounding (the antidote to anxiety):</b> as you walk, softly name — <b>5</b> things you can see, <b>4</b> sounds you can hear, <b>3</b> textures you can touch, <b>2</b> smells, and <b>1</b> thought passing by. The alarm quiets down.',
+      savorPh:'One small moment outside that caught your eye? (optional)',
+      savorLine:'Small find on the way: ',
+      t_next:'While it is warm — make the smallest date with tomorrow:',
+      planPrefix:'Tomorrow\'s pact: ',
+      nextSaved:' ✓ Summer remembers',
+      stamp:function(m,t,b,a){var arrow='mood '+b+' → '+a+(a>b?'  ↑ a little lighter':' ');return 'Task: '+m+'<br>Time outside: '+t+'<br>'+arrow+'<br>Summer stamps it with an elephant footprint.'},
       cnt:function(n){return 'You have made it out '+n+' times'}
     }
   };
@@ -297,13 +321,17 @@
   };
 
   var lang='zh',why='tired',mIdx=0,taskLabel='',wins=0,timer=null,sec=0;
+  var nextPlan='';
   var moodBefore=0,moodAfter=0;
   var bStart=0,bRAF=null,bDone=0,BREATHS=3,CYCLE=10000,INH=4000,HOLD=1000;
 
   function applyLang(){
     document.querySelectorAll('[data-i]').forEach(function(el){var v=T[lang][el.getAttribute('data-i')];if(typeof v==='string')el.innerHTML=v;});
     document.getElementById('langBtn').textContent=lang==='zh'?'EN':'中';
+    var nm=document.getElementById('eleName');if(nm)nm.textContent=lang==='zh'?'夏天':'Summer';
     paint();
+    var sv=document.getElementById('savor');if(sv)sv.placeholder=T[lang].savorPh;
+    paintPlan();
     if(document.getElementById('s-decode').classList.contains('on'))fillDecode();
     if(document.getElementById('s-shrink').classList.contains('on'))fillShrink();
   }
@@ -372,7 +400,13 @@
     var n=5,el=document.getElementById('num');el.textContent=n;
     var t=setInterval(function(){n--;if(n>0){el.textContent=n;}else{clearInterval(t);el.textContent=T[lang].gogo;setTimeout(function(){startOut()},700);}},1000);
   }
-  function startOut(){sec=0;go('s-out');if(timer)clearInterval(timer);timer=setInterval(function(){sec++;document.getElementById('clock').textContent=fmt(sec)},1000);}
+  function startOut(){
+    sec=0;go('s-out');
+    var g=document.getElementById('groundTip');
+    if(why==='anx'){g.innerHTML=T[lang].ground5;g.style.display='block';}else{g.style.display='none';}
+    if(timer)clearInterval(timer);
+    timer=setInterval(function(){sec++;document.getElementById('clock').textContent=fmt(sec)},1000);
+  }
   function askMood(){if(timer){clearInterval(timer);timer=null;}go('s-mood');}
   function buildMoodPre(){
     moodBefore=0;
@@ -382,14 +416,32 @@
   }
   function buildMood(){
     moodAfter=0;
+    var sv=document.getElementById('savor');if(sv){sv.value='';sv.placeholder=T[lang].savorPh;}
     var row=document.getElementById('moodRow');row.innerHTML='';
     for(var i=1;i<=10;i++){(function(v){var b=document.createElement('button');b.textContent=v;b.onclick=function(){moodAfter=v;[].forEach.call(row.children,function(c){c.classList.remove('sel')});b.classList.add('sel');var mb=document.getElementById('moodBtn');mb.disabled=false;mb.style.opacity=1;};row.appendChild(b);})(i);}
     var mb=document.getElementById('moodBtn');mb.disabled=true;mb.style.opacity=.4;
   }
   function win(){
     wins++;save();paint();
-    document.getElementById('stamp').innerHTML=T[lang].stamp(taskLabel,fmt(sec),moodBefore||('—'),moodAfter);
+    var sv=document.getElementById('savor'),extra='';
+    if(sv&&sv.value.trim()){extra='<br>'+T[lang].savorLine+sv.value.trim();}
+    document.getElementById('stamp').innerHTML=T[lang].stamp(taskLabel,fmt(sec),moodBefore||('—'),moodAfter)+extra;
+    fillNext();
     go('s-win');
+  }
+  function fillNext(){
+    var box=document.getElementById('nextBox');box.innerHTML='';
+    WHY[why][lang].tasks.forEach(function(t){
+      var b=document.createElement('button');b.className='soft';b.textContent=t;
+      b.onclick=function(){nextPlan=t;[].forEach.call(box.children,function(c){c.classList.remove('sel')});b.classList.add('sel');
+        try{if(window.storage)window.storage.set('out-plan',t)}catch(e){}
+        b.textContent=t+T[lang].nextSaved;paintPlan();};
+      box.appendChild(b);
+    });
+  }
+  function paintPlan(){
+    var el=document.getElementById('planLine');if(!el)return;
+    el.textContent = nextPlan ? (T[lang].planPrefix+'\u300c'+nextPlan+'\u300d') : '';
   }
   function paint(){
     var c=document.getElementById('count');if(c)c.textContent=wins>0?T[lang].cnt(wins):'';
@@ -399,6 +451,7 @@
   (function(){applyLang();try{if(window.storage){
     window.storage.get('out-wins').then(function(r){if(r&&r.value){wins=parseInt(r.value)||0;paint()}}).catch(function(){});
     window.storage.get('lang').then(function(r){if(r&&r.value&&T[r.value]){lang=r.value;applyLang()}}).catch(function(){});
+    window.storage.get('out-plan').then(function(r){if(r&&r.value){nextPlan=r.value;paintPlan()}}).catch(function(){});
   }}catch(e){}})();
 </script>
 </body>
